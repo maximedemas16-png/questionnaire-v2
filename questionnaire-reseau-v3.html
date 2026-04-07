@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Questionnaire Réseau</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1a2e;
+    --paper: #f5f0e8;
+    --cream: #ede8dc;
+    --accent: #c8602a;
+    --accent-light: #e8a07a;
+    --muted: #8a8070;
+    --white: #ffffff;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  .form-container {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 48px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--cream);
+    position: relative;
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: -1px; left: 50%;
+    transform: translateX(-50%);
+    width: 60px; height: 3px;
+    background: var(--accent);
+  }
+  .header-label {
+    font-size: 11px; font-weight: 500;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 12px;
+  }
+  .header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(26px, 5vw, 40px);
+    font-weight: 700; color: var(--ink); line-height: 1.2;
+  }
+  .header p { margin-top: 12px; color: var(--muted); font-size: 15px; font-weight: 300; }
+
+  .section { margin-bottom: 36px; }
+  .section-title {
+    font-size: 11px; font-weight: 500;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 16px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--cream); }
+
+  .field { margin-bottom: 20px; }
+  .field label { display: block; font-size: 14px; font-weight: 500; color: var(--ink); margin-bottom: 8px; }
+  .field input[type="text"] {
+    width: 100%; padding: 13px 16px;
+    background: var(--white);
+    border: 1.5px solid var(--cream); border-radius: 6px;
+    font-family: 'DM Sans', sans-serif; font-size: 15px;
+    color: var(--ink); outline: none; transition: border-color 0.2s;
+  }
+  .field input[type="text"]:focus { border-color: var(--accent); }
+
+  .toggle-group { display: flex; gap: 10px; }
+  .toggle-group input[type="radio"] { display: none; }
+  .toggle-group label {
+    flex: 1; padding: 12px 16px;
+    background: var(--white);
+    border: 1.5px solid var(--cream); border-radius: 6px;
+    text-align: center; font-size: 14px; font-weight: 500;
+    cursor: pointer; transition: all 0.15s;
+    color: var(--muted); user-select: none;
+  }
+  .toggle-group input[type="radio"]:checked + label {
+    background: var(--accent); border-color: var(--accent); color: var(--white);
+  }
+  .toggle-group label:hover { border-color: var(--accent-light); color: var(--ink); }
+
+  .field textarea {
+    width: 100%; padding: 13px 16px;
+    background: var(--white);
+    border: 1.5px solid var(--cream); border-radius: 6px;
+    font-family: 'DM Sans', sans-serif; font-size: 15px;
+    color: var(--ink); outline: none; resize: vertical;
+    min-height: 90px; transition: border-color 0.2s;
+  }
+  .field textarea:focus { border-color: var(--accent); }
+  .field .helper { font-size: 12px; color: var(--muted); margin-top: 5px; }
+
+  .q-card {
+    background: var(--white);
+    border: 1.5px solid var(--cream); border-radius: 10px;
+    padding: 20px; margin-bottom: 14px;
+  }
+  .q-card .q-label { font-size: 14px; font-weight: 500; color: var(--ink); margin-bottom: 14px; }
+
+  .submit-btn {
+    width: 100%; padding: 16px;
+    background: var(--ink); color: var(--paper);
+    border: none; border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px; font-weight: 500; letter-spacing: 0.05em;
+    cursor: pointer; transition: background 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+  }
+  .submit-btn:hover:not(:disabled) { background: var(--accent); }
+  .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .spinner {
+    width: 18px; height: 18px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: none;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error-msg {
+    display: none; background: #fdecea; color: #b71c1c;
+    padding: 12px 16px; border-radius: 6px;
+    font-size: 13px; margin-bottom: 16px;
+  }
+  .error-msg.show { display: block; }
+
+  .success-msg {
+    display: none; text-align: center;
+    padding: 56px 24px;
+    background: var(--white); border-radius: 12px;
+    border: 1.5px solid var(--cream);
+  }
+  .success-msg.show { display: block; animation: fadeIn 0.4s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; } }
+  .success-icon { font-size: 52px; margin-bottom: 16px; }
+  .success-msg h2 { font-family: 'Playfair Display', serif; font-size: 26px; margin-bottom: 8px; }
+  .success-msg p { color: var(--muted); font-size: 15px; }
+  .new-btn {
+    margin-top: 24px; padding: 12px 28px;
+    background: var(--ink); color: var(--paper);
+    border: none; border-radius: 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px; cursor: pointer; transition: background 0.2s;
+  }
+  .new-btn:hover { background: var(--accent); }
+
+  #activites-field { display: none; margin-top: -4px; margin-bottom: 16px; padding: 0 4px; }
+</style>
+</head>
+<body>
+
+<div class="form-container">
+  <div class="header">
+    <div class="header-label">Réseau d'entreprises · Morbihan</div>
+    <h1>Participation & Implication</h1>
+    <p>Quelques questions pour mieux organiser nos prochains événements</p>
+  </div>
+
+  <div id="errorMsg" class="error-msg"></div>
+
+  <div id="formContent">
+    <div class="section">
+      <div class="section-title">Identité</div>
+      <div class="field">
+        <label>Nom *</label>
+        <input type="text" id="nom" placeholder="Votre nom de famille">
+      </div>
+      <div class="field">
+        <label>Prénom *</label>
+        <input type="text" id="prenom" placeholder="Votre prénom">
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Participation</div>
+
+      <div class="q-card">
+        <div class="q-label">🏢 Visite d'entreprise — Seriez-vous partant·e pour ouvrir votre entreprise au groupe ?</div>
+        <div class="toggle-group">
+          <input type="radio" name="visite" id="visite_oui" value="Oui">
+          <label for="visite_oui">✓ Oui</label>
+          <input type="radio" name="visite" id="visite_non" value="Non">
+          <label for="visite_non">✗ Non</label>
+        </div>
+      </div>
+
+      <div class="q-card">
+        <div class="q-label">🤝 Accueil — Êtes-vous prêt·e à accueillir un événement dans vos locaux ?</div>
+        <div class="toggle-group">
+          <input type="radio" name="accueil" id="accueil_oui" value="Oui">
+          <label for="accueil_oui">✓ Oui</label>
+          <input type="radio" name="accueil" id="accueil_non" value="Non">
+          <label for="accueil_non">✗ Non</label>
+        </div>
+      </div>
+
+      <div class="q-card">
+        <div class="q-label">🎯 Passion — Seriez-vous prêt·e à partager une passion ou un savoir-faire avec le groupe ?</div>
+        <div class="toggle-group">
+          <input type="radio" name="passion" id="passion_oui" value="Oui">
+          <label for="passion_oui">✓ Oui</label>
+          <input type="radio" name="passion" id="passion_non" value="Non">
+          <label for="passion_non">✗ Non</label>
+        </div>
+      </div>
+
+      <div id="activites-field">
+        <div class="field">
+          <label>Quelles activités pourriez-vous partager ?</label>
+          <textarea id="activites" placeholder="Cuisine, sport, artisanat, musique, nature… décrivez librement !"></textarea>
+          <div class="helper">Ce champ est facultatif.</div>
+        </div>
+      </div>
+
+      <div class="q-card">
+        <div class="q-label">🍽️ Repas mystère — Partant·e pour un repas dont le lieu reste secret jusqu'au dernier moment ?</div>
+        <div class="toggle-group">
+          <input type="radio" name="repas" id="repas_oui" value="Oui">
+          <label for="repas_oui">✓ Oui</label>
+          <input type="radio" name="repas" id="repas_non" value="Non">
+          <label for="repas_non">✗ Non</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Créneaux préférés</div>
+
+      <div class="q-card">
+        <div class="q-label">☀️ Midi — Préférez-vous des événements sur le temps du déjeuner ?</div>
+        <div class="toggle-group">
+          <input type="radio" name="midi" id="midi_oui" value="Oui">
+          <label for="midi_oui">✓ Oui</label>
+          <input type="radio" name="midi" id="midi_non" value="Non">
+          <label for="midi_non">✗ Non</label>
+        </div>
+      </div>
+
+      <div class="q-card">
+        <div class="q-label">🌙 Soirée — Préférez-vous des événements en soirée ?</div>
+        <div class="toggle-group">
+          <input type="radio" name="soiree" id="soiree_oui" value="Oui">
+          <label for="soiree_oui">✓ Oui</label>
+          <input type="radio" name="soiree" id="soiree_non" value="Non">
+          <label for="soiree_non">✗ Non</label>
+        </div>
+      </div>
+    </div>
+
+    <button class="submit-btn" id="submitBtn" onclick="submitForm()">
+      <span id="btnText">Envoyer ma réponse →</span>
+      <div class="spinner" id="spinner"></div>
+    </button>
+  </div>
+
+  <div id="successMsg" class="success-msg">
+    <div class="success-icon">✅</div>
+    <h2>Merci pour votre réponse !</h2>
+    <p>Votre participation a bien été enregistrée.</p>
+    <button class="new-btn" onclick="resetForm()">Envoyer une autre réponse</button>
+  </div>
+</div>
+
+<!-- iframe caché pour absorber la réponse Google Script -->
+<iframe name="hidden-iframe" style="display:none;"></iframe>
+
+<script>
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw77-O75udJdgxTuT7UFm2qz9N4Vl4wf1ZDXkXlnYAEDJcK5tttmjzn30h33tIPd7QEYQ/exec';
+
+  document.querySelectorAll('input[name="passion"]').forEach(r => {
+    r.addEventListener('change', function() {
+      document.getElementById('activites-field').style.display = this.value === 'Oui' ? 'block' : 'none';
+    });
+  });
+
+  function getVal(name) {
+    const r = document.querySelector(`input[name="${name}"]:checked`);
+    return r ? r.value : 'Non répondu';
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('errorMsg');
+    el.textContent = msg;
+    el.classList.add('show');
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function hideError() {
+    document.getElementById('errorMsg').classList.remove('show');
+  }
+
+  function setLoading(loading) {
+    const btn = document.getElementById('submitBtn');
+    const txt = document.getElementById('btnText');
+    const spin = document.getElementById('spinner');
+    btn.disabled = loading;
+    txt.textContent = loading ? 'Envoi en cours…' : 'Envoyer ma réponse →';
+    spin.style.display = loading ? 'block' : 'none';
+  }
+
+  function submitForm() {
+    hideError();
+
+    const nom = document.getElementById('nom').value.trim();
+    const prenom = document.getElementById('prenom').value.trim();
+
+    if (!nom) { showError('Merci de renseigner votre nom.'); return; }
+    if (!prenom) { showError('Merci de renseigner votre prénom.'); return; }
+
+    setLoading(true);
+
+    // Construire les paramètres en query string (méthode GET via iframe = pas de CORS)
+    const params = new URLSearchParams({
+      nom, prenom,
+      visite: getVal('visite'),
+      accueil: getVal('accueil'),
+      passion: getVal('passion'),
+      activites: document.getElementById('activites').value.trim() || '—',
+      repas: getVal('repas'),
+      midi: getVal('midi'),
+      soiree: getVal('soiree'),
+    });
+
+    const iframe = document.querySelector('iframe[name="hidden-iframe"]');
+
+    iframe.onload = function() {
+      setLoading(false);
+      document.getElementById('formContent').style.display = 'none';
+      document.getElementById('successMsg').classList.add('show');
+    };
+
+    // Envoi GET via iframe — contourne CORS complètement
+    iframe.src = SCRIPT_URL + '?' + params.toString();
+  }
+
+  function resetForm() {
+    document.querySelectorAll('input[type="text"], textarea').forEach(el => el.value = '');
+    document.querySelectorAll('input[type="radio"]').forEach(el => el.checked = false);
+    document.getElementById('activites-field').style.display = 'none';
+    hideError();
+    document.getElementById('formContent').style.display = 'block';
+    document.getElementById('successMsg').classList.remove('show');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>
+</body>
+</html>
